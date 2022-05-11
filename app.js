@@ -45,7 +45,6 @@ initializePassport(
   
 var users = [] 
 
-
 app.set('view-engine', 'ejs')
 app.use(express.urlencoded({ extended: false}))
 app.use(flash())
@@ -53,7 +52,15 @@ app.use(session({secret: process.env.session, resave: false, saveUninitialized: 
 app.use(passport.initialize())
 app.use(passport.session())
 
-app.get('/', checkAutheticated,  (req,res) => {
+//testing data fetching feature
+app.get('/data', (req,res) => {
+    User.find().then((results)=>{
+        res.send(results);
+    }).catch((err)=>{
+            console.log(err);
+        })
+    })
+app.get('/', checkAutheticated, (req,res) => {
     res.render('index.ejs')
 })
 app.get('/login', checkNotAuthenticated, (req,res) => {
@@ -62,9 +69,22 @@ app.get('/login', checkNotAuthenticated, (req,res) => {
 app.get('/signup', checkNotAuthenticated, (req,res) => {
     res.render('signup.ejs')   
 })
-
+app.get('/search', checkNotAuthenticated,(req,res) => {
+    res.render('search.ejs')
+})
+app.post('/search', (req,res)=> {
+    const findEmail = req.body.email;
+        User.findOne({email : 'lol@123.com', password :'lol123'}, function (err,result){
+            if (err) {
+                res.send(err);
+                res.redirect('/search')
+            } else {
+                cosole.log(User.findOne({email: findEmail}))
+                res.send(result);
+            }
+        } 
+)})
 app.post('/', upload.single('myFile'), function (req, res, next){
-    //const { fileName } = req.file.filename;
     try {
         const newFile = new User({
             fileName: req.file.filename
@@ -108,12 +128,14 @@ function checkAutheticated(req, res, next) {
     }
     res.redirect('/login')
 }
+
 function checkNotAuthenticated(req, res, next) {
     if (req.isAuthenticated()) {
       return res.redirect('/')
     }
     next()
   }
+//logout feature
 app.post('/logout', (req, res) => {
     req.logout()
     res.redirect('/login')
