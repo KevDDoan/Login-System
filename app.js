@@ -53,7 +53,7 @@ app.use(passport.initialize())
 app.use(passport.session())
 
 //testing data fetching feature
-app.get('/data', (req,res) => {
+app.get('/data', checkAutheticated ,(req,res) => {
     User.find().then((results)=>{
         res.send(results);
     }).catch((err)=>{
